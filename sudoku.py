@@ -276,16 +276,79 @@ while running:
                             board[row][col] = current
                             draw_board_and_highlight(board, highlight)
 
-                        # win sequence
-                        if not(any(0 in row for row in board)) and not(any(False in row for row in sketchboard)): # double check that sketchboard is all confirmed and all boxes are filled in
-                            if board == solvedboard:
-                                print("solved")
-                                # game win screen goes here
-                            else:
-                                print("failed")
-                                # game lose screeen goes here
-                            print(board)
-                            print(solvedboard)
+                        def draw_game_over_screen(message, color):
+                            screen.fill("white")
+                            end_font = pygame.font.SysFont(None, 72)
+                            message_text = end_font.render(message, True, color)
+                            screen.blit(message_text, (200, 200))  # Centered message
+                        
+                            # Buttons
+                            restart_button = pygame.Rect(200, 400, 150, 70)
+                            exit_button = pygame.Rect(450, 400, 150, 70)
+                            pygame.draw.rect(screen, "black", restart_button)
+                            pygame.draw.rect(screen, "black", exit_button)
+                        
+                            restart_text = font.render("Restart", True, "white")
+                            exit_text = font.render("Exit", True, "white")
+                            screen.blit(restart_text, (restart_button.x + 35, restart_button.y + 20))
+                            screen.blit(exit_text, (exit_button.x + 55, exit_button.y + 20))
+
+                            pygame.display.flip()
+
+                            # Wait for user input
+                            while True:
+                                for event in pygame.event.get():
+                                    if event.type == pygame.QUIT:
+                                        pygame.quit()
+                                        exit()
+                                    if event.type == pygame.MOUSEBUTTONDOWN:
+                                        click_pos = event.pos
+                                        if restart_button.collidepoint(click_pos):
+                                            return "restart"  # Restart the game
+                                        if exit_button.collidepoint(click_pos):
+                                            pygame.quit()
+                                            exit()
+    
+
+def is_board_solved(board, solved_board):
+    return board == solved_board
+
+# Inside the event loop, update the win sequence
+if event.type == pygame.KEYDOWN:
+    if status == "in game":
+
+        # Handle highlights (already implemented in your code)
+
+        # Handle numbers (already implemented in your code)
+
+        # Check for win or fail condition
+        if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+            col, row = highlight[1], highlight[2]
+
+            if sketchboard[row][col] == False and board[row][col] != 0:
+                current = board[row][col]
+                board[row][col] = 0
+                draw_board_and_highlight(board, highlight)  # Easy way out, redraw entire board with space removed
+                sketchboard[row][col] = True                # Instead of sketched
+                board[row][col] = current
+                draw_board_and_highlight(board, highlight)
+
+            # Win sequence
+            if not(any(0 in row for row in board)) and not(any(False in row for row in sketchboard)): 
+                if is_board_solved(board, solvedboard):
+                    print("solved")
+                    action = draw_game_over_screen("You Win!", "green")
+                else:
+                    print("failed")
+                    action = draw_game_over_screen("Try Again!", "red")
+
+                if action == "restart":
+                    # Reset game state
+                    sketchboard = list([True for _ in range(9)] for _ in range(9))
+                    board = [[0] * 9 for _ in range(9)]  # Clear the board
+                    draw_title()
+                    status = "title"  # Return to title screen
+
 
 pygame.quit()
 print("goodbye")
