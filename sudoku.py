@@ -10,6 +10,7 @@ bg = pygame.image.load("images/bg.png").convert()
 font = pygame.font.SysFont(None, 36)
 highlight = (False, 0, 0)
 running = True
+sketchboard = list([True for _ in range(9)] for _ in range(9))
 
 def draw_title():
     screen.fill("black")
@@ -80,8 +81,11 @@ def draw_board(board):
             num = board[row][col]
             if num != 0: # make sure we skip zeroes
 
-                # create text for each number
-                num_text = font.render(str(num), True, "black")
+                # create text for each number. check sketchboard to see if the number is sketched or confirmed
+                if sketchboard[row][col]:
+                    num_text = font.render(str(num), True, "black")
+                else:
+                    num_text = font.render(str(num), True, (212, 133, 146)) # just picked this color randomly since it looked good.
 
                 # calculate position for each number
                 text_x = col * width_floor + (width_floor - num_text.get_width()) // 2
@@ -108,7 +112,7 @@ def move_highlight(position, highlight):
     if highlight[0]:
         draw_board(board)          # we tried to figure out how to just redraw the single cell, but ran into too many problems with line thickness, so we just decided
         highlight = (False, 0, 0)  # to redraw the entire board to make it simpler.
-        
+
     # cell width/height, defined for later use.
     width = 818 // 9
     height = 648 // 9
@@ -138,6 +142,10 @@ def move_highlight(position, highlight):
     print(f"({col}, {row})")
 
     return highlight
+
+def draw_board_and_highlight(board, highlight):
+    draw_board(board)
+    highlight = move_highlight((highlight[1], highlight[2]), highlight)
 
 draw_title()
 status = "title"
@@ -171,6 +179,14 @@ while running:
                     print(board)
 
                 if easy.collidepoint(clickposition) or medium.collidepoint(clickposition) or hard.collidepoint(clickposition):
+                    originalboard = board
+                    # map the sketch board to each position. True means each number is confirmed in the board, False means it is either 0 or sketched.
+                    for num1 in range(9):
+                        for num2 in range(9):
+                            if board[num1][num2] == 0:
+                                sketchboard[num1][num2] = False
+                                originalsketchboard = sketchboard
+
                     draw_board(board)   # draw board on screen
                     status = "in game"  # change status to in game to prevent clicking old buttons
                     break               # break here to prevent extra click. it sets status to "in game" then registers that as a click to a number, which we don't want.
@@ -179,10 +195,15 @@ while running:
 
                 # check if click position coincides with each button, then follow their action. if click is somewhere else do nothing.
                 if reset.collidepoint(clickposition):
+                    sketchboard = originalsketchboard
+                    board = originalboard
+                    print("reset")
                     draw_board(board)
 
                 elif restart.collidepoint(clickposition):
+                    sketchboard = list([True for _ in range(9)] for _ in range(9))
                     draw_title()
+                    print("restart")
                     status = "title"
 
                 elif exitr.collidepoint(clickposition):
@@ -203,6 +224,8 @@ while running:
         # now we handle keypresses to move the highlight and insert numbers
         if event.type == pygame.KEYDOWN:
             if status == "in game":
+
+                # handle highlights
                 if event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]:
                     # first, we make sure there is a highlight. If no highlight, then just set highlight to (0, 0)
                     if not highlight[0]:
@@ -225,6 +248,17 @@ while running:
                                 if col < 8:
                                     col += 1
                         highlight = move_highlight((col, row), highlight)
+                
+                # handle numbers
+                if pygame.K_1 <= event.key <= pygame.K_9:
+                    if highlight[0]:                    # ensure that a square is actually highlighted
+                        num = event.key - pygame.K_0    # subtract K_0 (48, the ascii key code for 0) from the event.key (if a number, 49-57) to get the actual number. 
+                        col, row = highlight[1], highlight[2]
+                        if sketchboard[row][col] == False:  # make sure we are not updating an already confirmed value
+                            board[row][col] = num           # update value
+                            sketchboard[row][col] = False   # update sketchboard
+                            draw_board_and_highlight(board, highlight) # redraw screen and highlight
+                        
 
 pygame.quit()
 print("goodbye")
