@@ -28,6 +28,7 @@ class SudokuGenerator:
         self.row_length = row_length
         self.removed_cells = removed_cells
         self.board = list([0 for _ in range(row_length)] for i in range(row_length))
+        self.board = list([0 for _ in range(row_length)] for i in range(row_length))
         self.box_length = math.sqrt(row_length)
 
     '''
@@ -117,6 +118,7 @@ class SudokuGenerator:
             if not self.valid_in_box(i, i, num):
                 return False
         return True
+        return True
         
 
     '''
@@ -178,6 +180,7 @@ class SudokuGenerator:
                     return True
         
         col = int(col) # was having significant issues with col being a float and not an int, so converted it here.
+        col = int(col) # was having significant issues with col being a float and not an int, so converted it here.
         for num in range(1, self.row_length + 1):
             if self.is_valid(row, col, num):
                 self.board[row][col] = num
@@ -196,7 +199,7 @@ class SudokuGenerator:
     '''
     def fill_values(self):
         self.fill_diagonal()
-        self.fill_remaining(0, self.box_length)
+        print(self.fill_remaining(0, self.box_length))
 
     '''
     Removes the appropriate number of cells from the board
