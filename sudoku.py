@@ -277,11 +277,13 @@ while running:
                             draw_board_and_highlight(board, highlight)
 
                         # win sequence
-                        if not(any(0 in row for row in board)) and not(any(False in row for row in sketchboard)):
+                        if not(any(0 in row for row in board)) and not(any(False in row for row in sketchboard)): # double check that sketchboard is all confirmed and all boxes are filled in
                             if board == solvedboard:
                                 print("solved")
+                                # game win screen goes here
                             else:
                                 print("failed")
+                                # game lose screeen goes here
                             print(board)
                             print(solvedboard)
 
