@@ -117,7 +117,6 @@ class SudokuGenerator:
             if not self.valid_in_box(i, i, num):
                 return False
         return True
-        return True
         
 
     '''
