@@ -27,7 +27,7 @@ class SudokuGenerator:
     def __init__(self, row_length, removed_cells):
         self.row_length = row_length
         self.removed_cells = removed_cells
-        self.board = list(list() for i in range(row_length))
+        self.board = list([0 for _ in range(row_length)] for i in range(row_length))
         self.box_length = math.sqrt(row_length)
 
     '''
@@ -108,10 +108,15 @@ class SudokuGenerator:
 	Return: boolean
     '''
     def is_valid(self, row, col, num):
-        #NOT DONE
+        if num in self.board[row]:
+            return False
+        for i in range(0, 9):
+            if self.board[i][col] == num:
+                return False
         for i in range(0, 9, 3):
             if not self.valid_in_box(i, i, num):
                 return False
+        return True
         
 
     '''
@@ -172,6 +177,7 @@ class SudokuGenerator:
                 if row >= self.row_length:
                     return True
         
+        col = int(col) # was having significant issues with col being a float and not an int, so converted it here.
         for num in range(1, self.row_length + 1):
             if self.is_valid(row, col, num):
                 self.board[row][col] = num
@@ -210,8 +216,11 @@ class SudokuGenerator:
                 row = random.randint(0, 8)
                 col = random.randint(0, 8)
                 if self.board[row][col] != 0:
+                    print(f"successfully replaced value {self.board[row][col]} at ({row}, {col}), number {i+1}, with 0")
                     self.board[row][col] = 0
                     break
+                else:
+                    print(f"failed to replace value number {i+1} since ({row}, {col}) is already zero")
 
 
 '''
