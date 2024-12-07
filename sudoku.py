@@ -1,6 +1,6 @@
 import pygame
-import time
-from sudoku_generator import SudokuGenerator, generate_sudoku
+import copy
+from sudoku_generator import generate_sudoku
 
 pygame.init()
 
@@ -164,28 +164,29 @@ while running:
 
                 # check if click position coincides with each button, then generate the respective board. if click is somewhere else do nothing
                 if easy.collidepoint(clickposition):
-                    board = generate_sudoku(9, 30)
+                    board, solvedboard = generate_sudoku(9, 30)
                     print("easy board generated")
                     print(board)
 
                 elif medium.collidepoint(clickposition):
-                    board = generate_sudoku(9, 40)
+                    board, solvedboard = generate_sudoku(9, 40)
                     print("medium board generated")
                     print(board)
 
                 elif hard.collidepoint(clickposition):
-                    board = generate_sudoku(9, 50)
+                    board, solvedboard = generate_sudoku(9, 50)
                     print("hard board generated")
                     print(board)
 
                 if easy.collidepoint(clickposition) or medium.collidepoint(clickposition) or hard.collidepoint(clickposition):
-                    originalboard = board
+                    originalboard = copy.deepcopy(board)
+                    print(f"a{originalboard}")
                     # map the sketch board to each position. True means each number is confirmed in the board, False means it is either 0 or sketched.
                     for num1 in range(9):
                         for num2 in range(9):
                             if board[num1][num2] == 0:
                                 sketchboard[num1][num2] = False
-                                originalsketchboard = sketchboard
+                                originalsketchboard = copy.deepcopy(sketchboard)
 
                     draw_board(board)   # draw board on screen
                     status = "in game"  # change status to in game to prevent clicking old buttons
@@ -195,8 +196,8 @@ while running:
 
                 # check if click position coincides with each button, then follow their action. if click is somewhere else do nothing.
                 if reset.collidepoint(clickposition):
-                    sketchboard = originalsketchboard
-                    board = originalboard
+                    sketchboard = copy.deepcopy(originalsketchboard)
+                    board = copy.deepcopy(originalboard)
                     print("reset")
                     draw_board(board)
 
@@ -233,7 +234,7 @@ while running:
                     else:
                         col, row = highlight[1], highlight[2] # use current highlight position.
 
-                        # check which key was pressed
+                        # check which key was pressed, then adjust row/column appropriately
                         match event.key:
                             case pygame.K_UP:
                                 if row > 0:
@@ -250,15 +251,39 @@ while running:
                         highlight = move_highlight((col, row), highlight)
                 
                 # handle numbers
-                if pygame.K_1 <= event.key <= pygame.K_9:
+                if (pygame.K_1 <= event.key <= pygame.K_9) or (pygame.K_KP1 <= event.key <= pygame.K_KP9):
                     if highlight[0]:                    # ensure that a square is actually highlighted
-                        num = event.key - pygame.K_0    # subtract K_0 (48, the ascii key code for 0) from the event.key (if a number, 49-57) to get the actual number. 
+                        if event.key < 60:
+                            num = event.key - pygame.K_0 # subtract K_0 (48, the ascii key code for 0) from the event.key (if a number, 49-57) to get the actual number. 
+                        else:
+                            num = event.key - pygame.K_KP_0 # do the same thing for numpad keys
                         col, row = highlight[1], highlight[2]
-                        if sketchboard[row][col] == False:  # make sure we are not updating an already confirmed value
+                        
+                        # make sure we are not already updating a confirmed value, then update value
+                        if sketchboard[row][col] == False:
                             board[row][col] = num           # update value
                             sketchboard[row][col] = False   # update sketchboard
                             draw_board_and_highlight(board, highlight) # redraw screen and highlight
-                        
+
+                if event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                        col, row = highlight[1], highlight[2]
+
+                        if sketchboard[row][col] == False and board[row][col] != 0:
+                            current = board[row][col]
+                            board[row][col] = 0
+                            draw_board_and_highlight(board, highlight)  # easy way out, redraw entire board with space removed, then redraw entire board with number as confirmed
+                            sketchboard[row][col] = True                # instead of sketched
+                            board[row][col] = current
+                            draw_board_and_highlight(board, highlight)
+
+                        # win sequence
+                        if not(any(0 in row for row in board)) and not(any(False in row for row in sketchboard)):
+                            if board == solvedboard:
+                                print("solved")
+                            else:
+                                print("failed")
+                            print(board)
+                            print(solvedboard)
 
 pygame.quit()
 print("goodbye")

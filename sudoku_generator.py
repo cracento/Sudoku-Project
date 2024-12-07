@@ -1,4 +1,4 @@
-import math, random
+import math, random, copy, time
 
 """
 This was adapted from a GeeksforGeeks article "Program for Sudoku Generator" by Aarti_Rathi and Ankur Trisal
@@ -91,11 +91,13 @@ class SudokuGenerator:
 	Return: boolean
     '''
     def valid_in_box(self, row_start, col_start, num):
-        for i in range(row_start, row_start+3):
-            for j in range(col_start, col_start+3):
-                if num == self.board[i][j]:
-                    return True
-        return False
+        for row in range(row_start, row_start+3):
+            for col in range(col_start, col_start+3):
+                if self.board[row][col] == num:
+                    return False
+        return True
+
+        
     
     '''
     Determines if it is valid to enter num at (row, col) in the board
@@ -109,12 +111,15 @@ class SudokuGenerator:
     '''
     def is_valid(self, row, col, num):
         if num in self.board[row]:
+            print("fail1")
             return False
         for i in range(0, 9):
             if self.board[i][col] == num:
+                print("fail2")
                 return False
         for i in range(0, 9, 3):
             if not self.valid_in_box(i, i, num):
+                print("fail3")
                 return False
         return True
         
@@ -184,6 +189,9 @@ class SudokuGenerator:
                 if self.fill_remaining(row, col + 1):
                     return True
                 self.board[row][col] = 0
+        print(self.board)
+
+
         return False
 
     '''
@@ -221,6 +229,7 @@ class SudokuGenerator:
                     break
                 else:
                     print(f"failed to replace value number {i+1} since ({row}, {col}) is already zero")
+                time.sleep(0.2)
 
 
 '''
@@ -242,6 +251,7 @@ def generate_sudoku(size, removed):
     sudoku = SudokuGenerator(size, removed)
     sudoku.fill_values()
     board = sudoku.get_board()
-    sudoku.remove_cells()
-    board = sudoku.get_board()
-    return board
+    solvedboard = copy.deepcopy(board)    # was not sure how to complete this project without exporting the solved board as well. didn't make sense without redoing entire
+    sudoku.remove_cells()                       # portions of the code in this file, or importing sudokugenerator into the main program and creating our own sudokugenerator,
+    board = sudoku.get_board()                  # bypassing the entire need for this function in the first place. would make it simpler if it was part of the sudokugenerator class.
+    return board, solvedboard
