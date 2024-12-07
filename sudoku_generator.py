@@ -117,10 +117,11 @@ class SudokuGenerator:
             if self.board[i][col] == num:
                 print("fail2")
                 return False
-        for i in range(0, 9, 3):
-            if not self.valid_in_box(i, i, num):
-                print("fail3")
-                return False
+        start_row = row - row % int(self.box_length)
+        start_col = col - col % int(self.box_length)
+        if not self.valid_in_box(start_row, start_col, num):
+            print("fail3")
+            return False
         return True
         
 
