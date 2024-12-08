@@ -1,4 +1,4 @@
-import math, random, copy, time
+import math, random, copy
 
 """
 This was adapted from a GeeksforGeeks article "Program for Sudoku Generator" by Aarti_Rathi and Ankur Trisal
@@ -111,16 +111,13 @@ class SudokuGenerator:
     '''
     def is_valid(self, row, col, num):
         if num in self.board[row]:
-            print("fail1")
             return False
         for i in range(0, 9):
             if self.board[i][col] == num:
-                print("fail2")
                 return False
         start_row = row - row % int(self.box_length)
         start_col = col - col % int(self.box_length)
         if not self.valid_in_box(start_row, start_col, num):
-            print("fail3")
             return False
         return True
         
@@ -230,7 +227,6 @@ class SudokuGenerator:
                     break
                 else:
                     print(f"failed to replace value number {i+1} since ({row}, {col}) is already zero")
-                time.sleep(0.2)
 
 
 '''

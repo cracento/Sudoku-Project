@@ -55,6 +55,7 @@ def draw_board(board):
     height_floor = 648 // 9
 
     # create text for game
+    global resettext, restarttext, exittext
     resettext = font.render("Reset", True, "white")
     restarttext = font.render("Restart", True, "white")
     exittext = font.render("Exit", True, "white")
@@ -70,7 +71,7 @@ def draw_board(board):
     pygame.draw.rect(screen, "black", restart)
     pygame.draw.rect(screen, "black", exitr)
 
-    # draw that text
+    # draw that text # globals for using these after win sequence
     screen.blit(resettext, (166, 682))
     screen.blit(restarttext, (363, 682))
     screen.blit(exittext, (586, 682))
@@ -147,6 +148,14 @@ def draw_board_and_highlight(board, highlight):
     draw_board(board)
     highlight = move_highlight((highlight[1], highlight[2]), highlight)
 
+def draw_text(text: str):
+    screen.fill("white")
+    bigfont = pygame.font.SysFont(None, 70)
+    generatingtext = bigfont.render(text, True, "black")
+    screen.blit(generatingtext, (240, 120))
+    pygame.display.flip()
+
+
 draw_title()
 status = "title"
 while running:
@@ -164,23 +173,28 @@ while running:
 
                 # check if click position coincides with each button, then generate the respective board. if click is somewhere else do nothing
                 if easy.collidepoint(clickposition):
+                    draw_text("Generating...")
                     board, solvedboard = generate_sudoku(9, 30)
                     print("easy board generated")
                     print(board)
+                    print(f"solved: {solvedboard}")
 
                 elif medium.collidepoint(clickposition):
+                    draw_text("Generating...")
                     board, solvedboard = generate_sudoku(9, 40)
                     print("medium board generated")
                     print(board)
+                    print(f"solved: {solvedboard}")
 
                 elif hard.collidepoint(clickposition):
+                    draw_text("Generating...")
                     board, solvedboard = generate_sudoku(9, 50)
                     print("hard board generated")
                     print(board)
+                    print(f"solved: {solvedboard}")
 
                 if easy.collidepoint(clickposition) or medium.collidepoint(clickposition) or hard.collidepoint(clickposition):
                     originalboard = copy.deepcopy(board)
-                    print(f"a{originalboard}")
                     # map the sketch board to each position. True means each number is confirmed in the board, False means it is either 0 or sketched.
                     for num1 in range(9):
                         for num2 in range(9):
@@ -190,6 +204,8 @@ while running:
 
                     draw_board(board)   # draw board on screen
                     status = "in game"  # change status to in game to prevent clicking old buttons
+                    pygame.display.flip()
+                    print("a")
                     break               # break here to prevent extra click. it sets status to "in game" then registers that as a click to a number, which we don't want.
             
             if status == "in game":
@@ -278,14 +294,32 @@ while running:
 
                         # win sequence
                         if not(any(0 in row for row in board)) and not(any(False in row for row in sketchboard)): # double check that sketchboard is all confirmed and all boxes are filled in
+                            screen.fill("white")
+                            screen.blit(bg, (0, 0))
+                            bigfont = pygame.font.SysFont(None, 70)
+
+                            # redraw rectangles
+                            pygame.draw.rect(screen, "black", reset)
+                            pygame.draw.rect(screen, "black", restart)
+                            pygame.draw.rect(screen, "black", exitr)
+
+                            # draw that text
+                            screen.blit(resettext, (166, 682))
+                            screen.blit(restarttext, (363, 682))
+                            screen.blit(exittext, (586, 682))
+                            pygame.display.flip()
+                            
                             if board == solvedboard:
                                 print("solved")
-                                # game win screen goes here
+                                wintext = bigfont.render("You won!", True, "black")
+                                screen.blit(wintext, (240, 120))
+                               
                             else:
                                 print("failed")
-                                # game lose screeen goes here
-                            print(board)
-                            print(solvedboard)
+                                losetext = bigfont.render("You lost!", True, "black")
+                                screen.blit(losetext, (240, 120))
+                            
+                            pygame.display.flip()
 
 pygame.quit()
 print("goodbye")
